@@ -67,9 +67,155 @@ def save(aFont):
     aFont.os2_use_typo_metrics = True
 
     # Generate the font.
+    aFont.generate("%s.otf" % aFont.fontname)
     if aFont.validate() == 0:
         print(" done.")
     else:
         print(" validation error!")
         exit(1)
-    aFont.generate("%s.otf" % aFont.fontname)
+
+def generateParts(aFont):
+    size = em / 10
+
+    #   Center
+    #
+    #     X
+    #     X
+    # XXXXOXXXX
+    #     X
+    #     X
+    #
+    g = aFont.createChar(-1, "center")
+    g.width = em
+    p = g.glyphPen()
+    p.moveTo(em/2 - size, 0)
+    p.lineTo(em / 2 - size, em/2 - size)
+    p.lineTo(0, em/2 - size)
+    p.lineTo(0, em/2 + size)
+    p.lineTo(em/2 - size, em/2 + size)
+    p.lineTo(em/2 - size, em)
+    p.lineTo(em/2 + size, em)
+    p.lineTo(em/2 + size, em/2 + size)
+    p.lineTo(em, em/2 + size)
+    p.lineTo(em, em/2 - size)
+    p.lineTo(em/2 + size, em/2 - size)
+    p.lineTo(em/2 + size, 0)
+    p.closePath();
+
+    #   Left
+    #
+    # X
+    # X
+    # XXXXOXXXX
+    # X
+    # X
+    #
+    g = aFont.createChar(-1, "left")
+    g.width = em
+    p = g.glyphPen()
+    p.moveTo(0, 0)
+    p.lineTo(0, em)
+    p.lineTo(2 * size, em)
+    p.lineTo(2 * size, em/2 + size)
+    p.lineTo(em, em/2 + size)
+    p.lineTo(em, em/2 - size)
+    p.lineTo(2 * size, em/2 - size)
+    p.lineTo(2 * size, 0)
+    p.closePath();
+
+    #   Right
+    #
+    #         X
+    #         X
+    # XXXXOXXXX
+    #         X
+    #         X
+    #
+    g = aFont.createChar(-1, "right")
+    g.width = em
+    p = g.glyphPen()
+    p.moveTo(em - 2 * size, 0)
+    p.lineTo(em - 2 * size, em/2 - size)
+    p.lineTo(0, em/2 - size)
+    p.lineTo(0, em/2 + size)
+    p.lineTo(em - 2 * size, em/2 + size)
+    p.lineTo(em  - 2 * size, em)
+    p.lineTo(em, em)
+    p.lineTo(em, 0)
+    p.closePath();
+
+    #    Top
+    #
+    # XXXXXXXXX
+    #     X
+    #     O
+    #     X
+    #     X
+    #
+    g = aFont.createChar(-1, "top")
+    g.width = em
+    p = g.glyphPen()
+    p.moveTo(em/2 - size, 0)
+    p.lineTo(em / 2 - size, em - 2 * size)
+    p.lineTo(0, em - 2 * size)
+    p.lineTo(0, em)
+    p.lineTo(em, em)
+    p.lineTo(em, em - 2 * size)
+    p.lineTo(em/2 + size, em - 2 * size)
+    p.lineTo(em/2 + size, 0)
+    p.closePath();
+
+    #   Bottom
+    #
+    #     X
+    #     X
+    #     O
+    #     X
+    # XXXXXXXXX
+    #
+    g = aFont.createChar(-1, "bottom")
+    g.width = em
+    p = g.glyphPen()
+    p.moveTo(0, 0)
+    p.lineTo(0, 2 * size)
+    p.lineTo(em/2 - size, 2 * size)
+    p.lineTo(em/2 - size, em)
+    p.lineTo(em/2 + size, em)
+    p.lineTo(em/2 + size, 2 * size)
+    p.lineTo(em, 2 * size)
+    p.lineTo(em, 0)
+    p.closePath();
+
+    # Horizontal
+    #
+    #
+    #
+    # XXXXOXXXX
+    #
+    #
+    #
+    g = aFont.createChar(-1, "horizontal")
+    g.width = em
+    p = g.glyphPen()
+    p.moveTo(0, em/2 - size)
+    p.lineTo(0, em/2 + size)
+    p.lineTo(em, em/2 + size)
+    p.lineTo(em, em/2 - size)
+    p.closePath();
+
+    # Vertical
+    #
+    #     X
+    #     X
+    #     O
+    #     X
+    #     X
+    #
+    g = aFont.createChar(-1, "vertical")
+    g.width = em
+    p = g.glyphPen()
+    p.moveTo(em/2 - size, 0)
+    p.lineTo(em/2 - size, em)
+    p.lineTo(em/2 + size, em)
+    p.lineTo(em/2 + size, 0)
+    p.closePath();

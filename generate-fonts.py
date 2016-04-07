@@ -79,24 +79,24 @@ f.math.RadicalKernAfterDegree = 5600
 f.math.RadicalDegreeBottomRaisePercent = 65
 
 # MathGlyphInfo
-def italicCorrection(aCodePoint):
-    return 111 + (aCodePoint * em) % 349
+def italicCorrection(v):
+    return 111 + (v * em) % 349
 
-def topAccentAttachment(aCodePoint):
-    return 222 + (aCodePoint * em) % 257
+def topAccentAttachment(v):
+    return 222 + (v * em) % 257
 
-def isExtendedShape(aCodePoint):
-    return aCodePoint % 3 == 0
+def isExtendedShape(v):
+    return v % 3 == 0
 
-def mathKern(aCodePoint):
+def mathKern(v):
     height = 10
     kern = 5
-    count = aCodePoint % 11
+    count = v % 11
     t = []
     if count > 0:
         for i in range(0, count):
-            height += 5 + aCodePoint % 17
-            kern += 7 + aCodePoint % 23
+            height += 5 + v % 17
+            kern += 7 + v % 23
             t.append((height, kern))
     return tuple(t)
 
@@ -148,6 +148,16 @@ horizontalAndVerticalArrows = [
     0x21E9 # downwards white arrow
 ]
 
+# Generate parts
+# "left", "top", "bottom", "right", "center", "horizontal", "vertical"
+generateParts(f)
+
+def connectorSize(v):
+    minsize = f.math.MinConnectorOverlap
+    maxsize = em / 2 - em / 10
+    t = float(v % 11) / 10
+    return int(round(t * minsize + (1 - t) * maxsize))
+
 for i in range(0, len(horizontalAndVerticalArrows)):
     isHorizontal = (i % 2 == 0)
     codePoint = horizontalAndVerticalArrows[i]
@@ -159,29 +169,78 @@ for i in range(0, len(horizontalAndVerticalArrows)):
 
     # Create size variants.
     count = codePoint % 7
-    variants = ""
-    length = em + em * (codePoint % 19) / 10
+    if count > 0:
+        variants = ""
+        length = em + em * (codePoint % 19) / 10
 
-    for j in range(2, 2 + count):
-        name = "uni%04X_size%d" % (codePoint, j)
-        g = f.createChar(-1, name)
-        g.italicCorrection = italicCorrection(codePoint + j)
-        length += (1 + j % 3) * em / 4
-        size = em / (2 + j % 5)
+        for j in range(2, 2 + count):
+            name = "uni%04X_size%d" % (codePoint, j)
+            g = f.createChar(-1, name)
+            g.italicCorrection = italicCorrection(codePoint + j)
+            length += (1 + j % 3) * em / 4
+            size = em / (2 + j % 5)
+            if isHorizontal:
+                drawRectangle(g, length, size)
+            else:
+                drawRectangle(g, size, length)
+            variants = "%s %s" % (variants, name)
+
         if isHorizontal:
-            drawRectangle(g, length, size)
+            f[codePoint].horizontalVariants = variants
         else:
-            drawRectangle(g, size, length)
-        variants = "%s %s" % (variants, name)
-
-    if isHorizontal:
-        f[codePoint].horizontalVariants = variants
-    else:
-        f[codePoint].verticalVariants = variants
+            f[codePoint].verticalVariants = variants
 
     # Create glyph assembly.
-    if codePoint % 5:
-        None # TODO
+    count = codePoint % 8
+    components = []
+
+    if isHorizontal:
+        start = "left"
+        glue = "horizontal"
+        mid = "center"
+        end = "right"
+    else:
+        start = "bottom"
+        glue = "vertical"
+        mid = "center"
+        end = "top"
+
+    if count > 0:
+        components.append((start,
+                           False,
+                           connectorSize(codePoint + 107),
+                           connectorSize(codePoint + 223),
+                           em))
+
+    components.append((glue,
+                       True,
+                       connectorSize(codePoint + 661),
+                       connectorSize(codePoint + 283),
+                       em))
+
+    for i in range(0, count - 2):
+        components.append((mid,
+                           False,
+                           connectorSize(codePoint + 919),
+                           connectorSize(codePoint + 751),
+                           em))
+        components.append((glue,
+                           True,
+                           connectorSize(codePoint + 997),
+                           connectorSize(codePoint + 769),
+                           em))
+
+    if count > 1:
+        components.append((end,
+                           False,
+                           connectorSize(codePoint + 499),
+                           connectorSize(codePoint + 541),
+                           em))
+
+    if isHorizontal:
+        f[codePoint].horizontalComponents = tuple(components)
+    else:
+        f[codePoint].verticalComponents = tuple(components)
 
 save(f)
 ################################################################################
