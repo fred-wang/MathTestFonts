@@ -152,6 +152,11 @@ horizontalAndVerticalArrows = [
 # "left", "top", "bottom", "right", "center", "horizontal", "vertical"
 generateParts(f)
 
+# Generate some pieces to build left brace and low line
+for codePoint in [ord('_'), ord('{'), 0x23AA, 0x23A9, 0x23A8, 0x23A7]:
+    g = f.createChar(codePoint)
+    drawRectangle(g, em, em)
+
 def connectorSize(v):
     minsize = f.math.MinConnectorOverlap
     maxsize = em / 2 - em / 10
@@ -239,8 +244,10 @@ for i in range(0, len(horizontalAndVerticalArrows)):
 
     if isHorizontal:
         f[codePoint].horizontalComponents = tuple(components)
+        f[codePoint].horizontalComponentItalicCorrection = italicCorrection(codePoint + 853)
     else:
         f[codePoint].verticalComponents = tuple(components)
+        f[codePoint].verticalComponentItalicCorrection = italicCorrection(codePoint + 907)
 
 save(f)
 ################################################################################
